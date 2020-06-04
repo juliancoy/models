@@ -2,7 +2,7 @@ HEIGHT = 75;
 WIDTH = 24;
 
 e = .001;
-BATT_DIAMETER = 18.0 + 0.8; // leave a little space
+BATT_DIAMETER = 18.0 + 1; // leave a little space
 BATT_RADIUS   = BATT_DIAMETER/2;
 BATT_LENGTH   = 65.0;
 CLIP_WIDTH    = 4; // compressed clip width
@@ -10,8 +10,8 @@ CAVITY_HEIGHT = BATT_LENGTH+CLIP_WIDTH*2;
 CAVITY_RADIUS = BATT_LENGTH+CLIP_WIDTH*2;
 END_SHELL_HEIGHT = (HEIGHT-(BATT_LENGTH+CLIP_WIDTH*2))/2;
 COUNTERSINK_HEIGHT = 1.7;
-NUBLEN = 2;
 PCB_WIDTH = 1.6;
+NUBLEN = 2;
 BATTERY_CLIP_OFFSET = 10;
 BATTERY_CLIP_WIDTH  = 9;
 BATTERY_CLIP_HEIGHT = 8;
@@ -21,14 +21,6 @@ INNER_SHELL_RADIUS = BATT_RADIUS+SHELL_WIDTH;
 // precision
 $fn=200; 
    
-LATCH_INTERSECTION_HEIGHT=4;
-
-module LATCHBAR() cube(size = [WIDTH+e,NUBLEN+e,LATCH_INTERSECTION_HEIGHT+e], center = true);
-module RECEPTIVE_LATCHS() union(){
-    translate([0,NUBLEN/2,HEIGHT/2-LATCH_INTERSECTION_HEIGHT+1])
-        LATCHBAR();
-};
-
 module BATTERY() 
     cylinder(h = CAVITY_HEIGHT, r1 = BATT_RADIUS, r2 = BATT_RADIUS, center = true);
 
@@ -43,7 +35,7 @@ module BASIC_INNER_HULL() difference(){
     BATTERY();  
 }
 
-INNER_HULL_GRADE = -6; // degrees i think
+INNER_HULL_GRADE = -4.5; // degrees i think
 module INNER_HULL_CHOP(){
     // take off the top half
     rotate([INNER_HULL_GRADE,0,0]){
@@ -59,7 +51,7 @@ module INNER_HULL_CHOP_WIDE(){
     }
 }
 
-OUTER_HULL_GRADE = 6; // degrees i think
+OUTER_HULL_GRADE = -INNER_HULL_GRADE; // degrees i think
 module OUTER_HULL_CHOP(){
     rotate([OUTER_HULL_GRADE,0,0])
         translate([0,WIDTH/2, 0])
@@ -116,24 +108,6 @@ difference(){
     BATTERY_CLIP_HOLES();
 }
 
-// stable latch
-difference(){
-    intersection(){
-        //BASIC_INNER_HULL();
-        translate([0,NUBLEN/2,-(HEIGHT/2-LATCH_INTERSECTION_HEIGHT+1)])
-        LATCHBAR();
-        INNER_CYLINDER();
-    }
-    // smooth off one side
-    translate([3.4,0,0])
-    rotate([0,0,60])
-        cube(size = [WIDTH-4,INNER_SHELL_RADIUS,HEIGHT], center = true);
-    // smooth off other side
-    translate([-3.4,0,0])
-    rotate([0,0,-60])
-        cube(size = [WIDTH+4,INNER_SHELL_RADIUS,HEIGHT], center = true);
-}
-
 // inner hull
 difference(){
     BASIC_INNER_HULL();
@@ -146,10 +120,7 @@ difference(){
     // polish off the end cap
     translate([0, WIDTH/2-tan(INNER_HULL_GRADE)*HEIGHT/2-0.2, 0])
         cube(size = [WIDTH, WIDTH, CAVITY_HEIGHT], center = true);
-    
-    // take out the receptive latches from either side
-    RECEPTIVE_LATCHS();
-    
+        
     // countersink the battery clip (Keystone 209)
     // can't do
     
