@@ -13,7 +13,8 @@ END_SHELL_HEIGHT = (HEIGHT-(BATT_LENGTH+CLIP_WIDTH*2))/2;
 COUNTERSINK_HEIGHT = 1.7;
 PCB_WIDTH = 1.6;
 NUBLEN = 2;
-BATTERY_CLIP_OFFSET = 11.5;
+BATTERY_CLIP_STRAIT_WIDTH = 10;
+BATTERY_CLIP_OFFSET = 2;
 BATTERY_CLIP_WIDTH  = 9;
 BATTERY_CLIP_HEIGHT = 8;
 SHELL_WIDTH = (WIDTH-BATT_DIAMETER)/2/2 + e;
@@ -73,25 +74,28 @@ module OUTER_HULL_CHOP_LARGE(){
     }
 }
 
-module BATTERY_CLIP_HOLE()
+module BATTERY_CLIP_HOLE_SMALL()
     translate([0,0,-HEIGHT/2])
         cube(size = [BATTERY_CLIP_WIDTH,NUBLEN,BATTERY_CLIP_HEIGHT], center = true);
 
 module BATTERY_CLIP_HOLE_LARGE()
     translate([0,0,-HEIGHT/2])
-        cube(size = [BATTERY_CLIP_WIDTH,BATTERY_CLIP_OFFSET,BATTERY_CLIP_HEIGHT], center = true);
+        cube(size = [BATTERY_CLIP_WIDTH,BATTERY_CLIP_STRAIT_WIDTH,BATTERY_CLIP_HEIGHT], center = true);
+
+module BATTERY_CLIP_HOLE(){
+    translate([0,BATTERY_CLIP_OFFSET,0]){
+        // remove a space for the battery clip
+        BATTERY_CLIP_HOLE_SMALL();
+        translate([0,BATTERY_CLIP_STRAIT_WIDTH,0])
+            BATTERY_CLIP_HOLE_LARGE();
+    }
+}
 
 module BATTERY_CLIP_HOLES(){
-    translate([0,3.5,0]){
-    // remove a space for the battery clip
+    BATTERY_CLIP_HOLE();
+    rotate([0,0,180])
         BATTERY_CLIP_HOLE();
-        translate([0,BATTERY_CLIP_OFFSET,0])
-            BATTERY_CLIP_HOLE_LARGE();
-        intersection(){
-            translate([0,-BATTERY_CLIP_OFFSET,0])
-                BATTERY_CLIP_HOLE_LARGE();
-        }
-    }
+    
     // create arch 
     translate([0,-10,-HEIGHT/2 + BATTERY_CLIP_HEIGHT/2])
     rotate([90,0,0])
