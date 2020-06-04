@@ -1,6 +1,5 @@
 HEIGHT = 75;
-WIDTH = 23;
-SHELL_WIDTH = .8;
+WIDTH = 24;
 
 e = .001;
 BATT_DIAMETER = 18.0 + 0.8; // leave a little space
@@ -9,7 +8,6 @@ BATT_LENGTH   = 65.0;
 CLIP_WIDTH    = 4; // compressed clip width
 CAVITY_HEIGHT = BATT_LENGTH+CLIP_WIDTH*2;
 CAVITY_RADIUS = BATT_LENGTH+CLIP_WIDTH*2;
-INNER_SHELL_RADIUS = BATT_RADIUS+SHELL_WIDTH;
 END_SHELL_HEIGHT = (HEIGHT-(BATT_LENGTH+CLIP_WIDTH*2))/2;
 COUNTERSINK_HEIGHT = 1.7;
 NUBLEN = 2;
@@ -17,6 +15,9 @@ PCB_WIDTH = 1.6;
 BATTERY_CLIP_OFFSET = 10;
 BATTERY_CLIP_WIDTH  = 9;
 BATTERY_CLIP_HEIGHT = 8;
+SHELL_WIDTH = (WIDTH-BATT_DIAMETER)/2/2 + e;
+echo(SHELL_WIDTH);
+INNER_SHELL_RADIUS = BATT_RADIUS+SHELL_WIDTH;
 // precision
 $fn=200; 
    
@@ -31,9 +32,13 @@ module RECEPTIVE_LATCHS() union(){
 module BATTERY() 
     cylinder(h = CAVITY_HEIGHT, r1 = BATT_RADIUS, r2 = BATT_RADIUS, center = true);
 
+module INNER_CYLINDER(){
+    cylinder(h = HEIGHT, r1 = INNER_SHELL_RADIUS, r2 = INNER_SHELL_RADIUS, center = true);
+}
+
 module BASIC_INNER_HULL() difference(){
     // main material
-    cylinder(h = HEIGHT, r1 = INNER_SHELL_RADIUS, r2 = INNER_SHELL_RADIUS, center = true);
+    INNER_CYLINDER();
     // battery size
     BATTERY();  
 }
@@ -116,7 +121,8 @@ difference(){
     intersection(){
         //BASIC_INNER_HULL();
         translate([0,NUBLEN/2,-(HEIGHT/2-LATCH_INTERSECTION_HEIGHT+1)])
-            LATCHBAR();
+        LATCHBAR();
+        INNER_CYLINDER();
     }
     // smooth off one side
     translate([3.4,0,0])
