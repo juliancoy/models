@@ -127,38 +127,42 @@ module STRENGTHEN_INVERT(){
         STREGNTHEN_BASE();
 }
 
-// outer hull
-difference(){
-    OUTER_CYLINDER();
-    
-    // remove the top side
-    OUTER_HULL_CHOP();
-    
-    // remove the center
-    cylinder(h = CAVITY_HEIGHT, r1 = WIDTH/2-SHELL_WIDTH, r2 = WIDTH/2-SHELL_WIDTH, center = true);
-    
-    // polish off the end cap
-    translate([0, WIDTH/2+5, 0])
-        cube(size = [WIDTH, WIDTH, CAVITY_HEIGHT], center = true);
-    
-    // remove one end cap
-    translate([0,0,HEIGHT/2-END_SHELL_HEIGHT/2])
-        cube(size = [WIDTH,WIDTH,END_SHELL_HEIGHT+e], center = true);
-    
-    BATTERY_CLIP_HOLES();
-    
-    STRENGTHEN_INVERT();
+// make a ball-in-hole snap
+module ball(r){
+    NUB_HEIGHT_OFFSET = 6;
+    NUB_ANGLE_OFFSET = 15;
+    rotate([0,0,NUB_ANGLE_OFFSET]) translate([INNER_SHELL_RADIUS,0,HEIGHT/2-NUB_HEIGHT_OFFSET])sphere(r = r);
+    rotate([0,0,180-NUB_ANGLE_OFFSET]) translate([INNER_SHELL_RADIUS,0,HEIGHT/2-NUB_HEIGHT_OFFSET])sphere(r = r);
 }
+ball(0.8);
 
-module INNER_SNAP(){
+// outer hull
+module OUTER_HULL(){
     difference(){
-    cube(size = [WIDTH,7,7], center = true);
-    translate([0,5,-1])
-        rotate([45,0,0])
-            cube(size = [WIDTH+e,12,7], center = true);
+        OUTER_CYLINDER();
+        
+        // remove the top side
+        OUTER_HULL_CHOP();
+        
+        // remove the center
+        cylinder(h = CAVITY_HEIGHT, r1 = WIDTH/2-SHELL_WIDTH, r2 = WIDTH/2-SHELL_WIDTH, center = true);
+        
+        // polish off the end cap
+        translate([0, WIDTH/2+5, 0])
+            cube(size = [WIDTH, WIDTH, CAVITY_HEIGHT], center = true);
+        
+        // remove one end cap
+        translate([0,0,HEIGHT/2-END_SHELL_HEIGHT/2])
+            cube(size = [WIDTH,WIDTH,END_SHELL_HEIGHT+e], center = true);
+        
+        BATTERY_CLIP_HOLES();
+        
+        STRENGTHEN_INVERT();
+        
+        rotate([180,0,0]) ball(1.0);
     }
-    
 }
+OUTER_HULL();
 
 // inner hull
 module INNER_HULL(){
@@ -181,19 +185,10 @@ module INNER_HULL(){
         BATTERY_CLIP_HOLES();
         
         STRENGTHEN_INVERT();
-        
-        //translate([BATT_RADIUS+SHELL_WIDTH/2,1,0]) 
-        rotate([180,0,0])INNER_SNAP();
     }
 }
 
 INNER_HULL();
-
-// inner snap
-intersection(){
-    translate([-WIDTH/2,0,0]) INNER_SNAP();
-    BASIC_INNER_HULL();
-}
 
 
 // outer flange
