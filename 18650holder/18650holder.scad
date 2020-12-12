@@ -23,14 +23,14 @@ echo("END_SHELL_HEIGHT");
 echo(END_SHELL_HEIGHT);
 INNER_SHELL_RADIUS = BATT_RADIUS+SHELL_WIDTH;
 // precision
-$fn=200; 
+$fn=100; 
 INNER_HULL_GRADE = -8.5; // degrees i think
 //OUTER_HULL_GRADE = -INNER_HULL_GRADE; // degrees i think
 OUTER_HULL_GRADE = 0; // degrees i think
 OUTER_CHAMFER = 2;
    
 module BATTERY() 
-    cylinder(h = CAVITY_HEIGHT, r = BATT_RADIUS, center = true);
+    cylinder(h = CAVITY_HEIGHT, r = BATT_RADIUS+0.4, center = true);
 
 module INNER_CYLINDER(){
     //cylinder(h = HEIGHT, r1 = INNER_SHELL_RADIUS, r2 = INNER_SHELL_RADIUS, center = true);
@@ -109,7 +109,7 @@ module OUTER_CYLINDER(){
 }
 
 // strengthen the lower shell
-STRENGTHEN_BASE_HEIGHT = COMPRESSED_CLIP_WIDTH-1;
+STRENGTHEN_BASE_HEIGHT = COMPRESSED_CLIP_WIDTH - 0.75;
 module STREGNTHEN_BASE(){
     difference(){
         translate([0, 0, -HEIGHT/2 + STRENGTHEN_BASE_HEIGHT/2+END_SHELL_HEIGHT-e])
@@ -123,6 +123,7 @@ intersection(){
 }
 
 module STRENGTHEN_INVERT(){
+    scale(1 + e)
     mirror([0,0,1])
         STREGNTHEN_BASE();
 }
