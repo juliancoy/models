@@ -115,13 +115,24 @@ difference(){
     // sound hole
     translate([101,inner_dims[1]-e,bottom_shell+standoff_height])
     cube([8,10,21]);
+    
+    // air holes
+    for(i = [0:7]){
+        translate([101 - i*13,-10,bottom_shell+standoff_height])
+        cube([4,11,26]);
+    }
+    for(i = [0:4]){
+        translate([109,7 + i*13,bottom_shell+standoff_height])
+        cube([11,4,26]);
+    }
 }
+
 
 translate([0,100,0]){
     difference(){
         lid(inner_dims, 6, bore_dia, bottom_shell);
         // hole for screen
-        translate([5, 22,-e])
+        translate([5, 22,-e2])
         cube([77,52,21]);
     }
 
