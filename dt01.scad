@@ -1,0 +1,128 @@
+$fn = 30;
+inner_width = 110;
+inner_length= 75;
+inner_height= 25;
+standoff_height = 3;
+inner_dims  = [inner_width, inner_length, inner_height + standoff_height];
+e = 0.001;
+e2 = 0.002;
+bottom_shell = 4;
+
+module lid(dims, dia, bore_dia, bottom_shell){
+    rad = dia/2;
+    difference(){
+        hull(){
+            translate([-dia, -dia, 0])
+            cylinder(d = dia, h = bottom_shell);
+            translate([-dia , dia + dims[1], 0])
+            cylinder(d = dia, h = bottom_shell);
+            translate([dia + dims[0], -dia, 0])
+            cylinder(d = dia, h = bottom_shell);
+            translate([dia + dims[0], dia + dims[1], 0])
+            cylinder(d = dia, h = bottom_shell);
+        }
+        
+        translate([0,0,bottom_shell+.01])
+        cube(dims);
+        
+        translate([-rad, -rad, -e])
+        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        translate([-rad , rad + dims[1], -e])
+        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        translate([rad + dims[0], -rad, -e])
+        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        translate([rad + dims[0], rad + dims[1], -e])
+        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+    
+    }
+}
+
+module roundedBox(dims, dia, bore_dia, bottom_shell){
+    rad = dia/2;
+    difference(){
+        hull(){
+            translate([-dia, -dia, 0])
+            cylinder(d = dia, h = dims[2] + bottom_shell);
+            translate([-dia , dia + dims[1], 0])
+            cylinder(d = dia, h = dims[2] + bottom_shell);
+            translate([dia + dims[0], -dia, 0])
+            cylinder(d = dia, h = dims[2] + bottom_shell);
+            translate([dia + dims[0], dia + dims[1], 0])
+            cylinder(d = dia, h = dims[2] + bottom_shell);
+        }
+        
+        translate([0,0,bottom_shell+.01])
+        cube(dims);
+        
+        translate([-rad, -rad, e])
+        cylinder(d = bore_dia, h = dims[2] + bottom_shell);
+        translate([-rad , rad + dims[1], e])
+        cylinder(d = bore_dia, h = dims[2] + bottom_shell);
+        translate([rad + dims[0], -rad, e])
+        cylinder(d = bore_dia, h = dims[2] + bottom_shell);
+        translate([rad + dims[0], rad + dims[1], e])
+        cylinder(d = bore_dia, h = dims[2] + bottom_shell);
+    
+    }
+}
+
+
+RPI_STANDOFF_CENTERS = [[0,0,0], [0,48.5,0], [58,0,0], [58,48.5,0]];
+module standoffs(standoff_height, bore){
+        standoff_dia = 5;
+        for(center = RPI_STANDOFF_CENTERS){
+            translate(center)
+            difference(){
+                cylinder(d2 = standoff_dia, d1 = standoff_dia*3, h = standoff_height + bottom_shell);
+                cylinder(d = bore, h = standoff_height + bottom_shell + e);
+            }
+        }
+}
+
+module standoff_bore(standoff_height, bore){
+        standoff_dia = 5;
+        for(center = RPI_STANDOFF_CENTERS){
+            translate(center)
+            cylinder(d = bore, h = standoff_height + bottom_shell + e);
+        }
+}
+
+
+bore_dia = 3;
+difference(){
+    union(){
+        roundedBox(inner_dims,4, bore_dia, bottom_shell);
+        translate([27, 20, e])
+        standoffs(standoff_height, 3);
+    }
+    
+    // USB + Ethernet hole
+    translate([-18,19,bottom_shell])
+    cube([20,55,23]);
+    
+    // Standoff holes
+    translate([27, 20, e]){
+        translate([0,0,-3])
+        standoffs(standoff_height, 0);
+        standoff_bore(standoff_height, 3);
+    }
+            
+    
+    // power hole
+    translate([25,inner_dims[1]-e,-e])
+    cube([63,12,16]);
+    
+    // sound hole
+    translate([101,inner_dims[1]-e,bottom_shell+standoff_height])
+    cube([8,10,21]);
+}
+
+translate([0,100,0]){
+    difference(){
+        lid(inner_dims, 6, bore_dia, bottom_shell);
+        // hole for screen
+        translate([5, 22,-e])
+        cube([77,52,21]);
+    }
+
+}
