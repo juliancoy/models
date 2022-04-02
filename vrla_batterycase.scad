@@ -1,6 +1,30 @@
-module batt(top_width, top_depth, bottom_width, bottom_depth, height){
-    
-    cube([top_width, top_depth, height]);
+$fn = 10; 
+include <util.scad>;
+
+module pos_hemi(size = 300){
+    translate([-size/2,00,-size/2])
+        cube([size,size,size]);
+}
+module pn_hemi(size = 300){
+    translate([00,-size/2,-size/2])
+        cube([size,size,size]);
 }
 
-batt(22.8, 13.6, 22.8, 13.2, 21.1);
+module halfbatt(dims){
+    difference(){
+        reenforced_case(dims);
+        tapered_cube(dims);
+        pn_hemi();
+    }
+} 
+
+module half(){
+    halfbatt([228, 136, 208, 132, 211]);
+}
+    
+difference(){
+    halfbatt([228, 136, 208, 132, 211]);
+    rotate([0,0,180]){
+        halfbatt([228, 136, 208, 132, 211]);
+    }
+}
