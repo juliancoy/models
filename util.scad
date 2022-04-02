@@ -157,15 +157,24 @@ module prism(l, w, h){
                */
    }
        
-e = 0.001;
+e = 0.01;
 module snapCellSingle(cellwidth = 5, height = 10){
     xtol = 0;
     halfgrip = 1;
     translate([-cellwidth/2-xtol,0,0])
     cube([cellwidth/2+xtol,cellwidth/2,height]);
-    translate([-xtol,-halfgrip,0])
+    translate([-xtol,-halfgrip+e,-e])
     rotate([0,-90,0])
-    prism(height+e*2,halfgrip,cellwidth/2);
+    prism(height-e,halfgrip,cellwidth/2);
+}
+
+module snapCellInverse(cellwidth = 5, height = 10){
+    sf = 1.1;
+    translate([-e,-e,-e])
+    rotate([0,0,180])
+    scale([sf,sf,sf])
+        snapCellSingle(cellwidth,height);
+    
 }
 
 module q(){
@@ -175,13 +184,9 @@ module q(){
     difference(){
         //rotate([0,0,180]){
         pos_hemi([cellwidth, cellwidth, height]);
-        sf = 1.1;
-        translate([-e,-e,-e])
-        rotate([0,0,180])
-        scale([sf,sf,sf])
-            snapCellSingle(cellwidth,height);
-        }
-        
+        snapCellInverse(cellwidth, height);
+    }
+
 }
 q();
 
