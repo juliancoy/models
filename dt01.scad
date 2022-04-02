@@ -7,48 +7,49 @@ inner_dims  = [inner_width, inner_length, inner_height + standoff_height];
 e = 0.001;
 e2 = 0.002;
 bottom_shell = 4;
+side_width = 3;
 
-module lid(dims, dia, bore_dia, bottom_shell){
-    rad = dia/2;
+module lid(dims, side_width, bore_dia, bottom_shell){
+    rad = side_width/2;
     difference(){
         hull(){
-            translate([-dia, -dia, 0])
-            cylinder(d = dia, h = bottom_shell);
-            translate([-dia , dia + dims[1], 0])
-            cylinder(d = dia, h = bottom_shell);
-            translate([dia + dims[0], -dia, 0])
-            cylinder(d = dia, h = bottom_shell);
-            translate([dia + dims[0], dia + dims[1], 0])
-            cylinder(d = dia, h = bottom_shell);
+            translate([-side_width, -side_width, 0])
+            cylinder(d = side_width, h = bottom_shell);
+            translate([-side_width , side_width + dims[1], 0])
+            cylinder(d = side_width, h = bottom_shell);
+            translate([side_width + dims[0], -side_width, 0])
+            cylinder(d = side_width, h = bottom_shell);
+            translate([side_width + dims[0], side_width + dims[1], 0])
+            cylinder(d = side_width, h = bottom_shell);
         }
         
         translate([0,0,bottom_shell+.01])
         cube(dims);
         
         translate([-rad, -rad, -e])
-        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        cylinder(d1 = bore_dia, d2 = side_width*2, h = bottom_shell + e2);
         translate([-rad , rad + dims[1], -e])
-        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        cylinder(d1 = bore_dia, d2 = side_width*2, h = bottom_shell + e2);
         translate([rad + dims[0], -rad, -e])
-        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        cylinder(d1 = bore_dia, d2 = side_width*2, h = bottom_shell + e2);
         translate([rad + dims[0], rad + dims[1], -e])
-        cylinder(d1 = bore_dia, d2 = bore_dia*3, h = bottom_shell + e2);
+        cylinder(d1 = bore_dia, d2 = side_width*2, h = bottom_shell + e2);
     
     }
 }
 
-module roundedBox(dims, dia, bore_dia, bottom_shell){
-    rad = dia/2;
+module roundedBox(dims, side_width, bore_dia, bottom_shell){
+    rad = side_width/2;
     difference(){
         hull(){
-            translate([-dia, -dia, 0])
-            cylinder(d = dia, h = dims[2] + bottom_shell);
-            translate([-dia , dia + dims[1], 0])
-            cylinder(d = dia, h = dims[2] + bottom_shell);
-            translate([dia + dims[0], -dia, 0])
-            cylinder(d = dia, h = dims[2] + bottom_shell);
-            translate([dia + dims[0], dia + dims[1], 0])
-            cylinder(d = dia, h = dims[2] + bottom_shell);
+            translate([-side_width, -side_width, 0])
+            cylinder(d = side_width, h = dims[2] + bottom_shell);
+            translate([-side_width , side_width + dims[1], 0])
+            cylinder(d = side_width, h = dims[2] + bottom_shell);
+            translate([side_width + dims[0], -side_width, 0])
+            cylinder(d = side_width, h = dims[2] + bottom_shell);
+            translate([side_width + dims[0], side_width + dims[1], 0])
+            cylinder(d = side_width, h = dims[2] + bottom_shell);
         }
         
         translate([0,0,bottom_shell+.01])
@@ -91,7 +92,7 @@ module standoff_bore(standoff_height, bore){
 bore_dia = 3;
 difference(){
     union(){
-        roundedBox(inner_dims,4, bore_dia, bottom_shell);
+        roundedBox(inner_dims,side_width, bore_dia, bottom_shell);
         translate([27, 20, e])
         standoffs(standoff_height, 3);
     }
@@ -127,10 +128,10 @@ difference(){
     }
 }
 
-
-translate([0,100,0]){
+top_shell = 2.4;
+translate([0,90,0]){
     difference(){
-        lid(inner_dims, 6, bore_dia, bottom_shell);
+        lid(inner_dims, side_width, bore_dia, top_shell);
         // hole for screen
         translate([5, 22,-e2])
         cube([77,52,21]);
