@@ -1,15 +1,6 @@
 $fn = 10; 
 include <util.scad>;
 
-module pos_hemi(size = 300){
-    translate([-size/2,00,-size/2])
-        cube([size,size,size]);
-}
-module pn_hemi(size = 300){
-    translate([00,-size/2,-size/2])
-        cube([size,size,size]);
-}
-
 module halfbatt(dims){
     difference(){
         reenforced_case(dims);

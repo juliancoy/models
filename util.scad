@@ -52,6 +52,17 @@ module rounded_cube(d,r=3,center=true) {
     }
 }
 
+
+module pos_hemi(dims){
+    translate([0,-dims[1]/2,0])
+        cube([dims[0],dims[1],dims[2]]);
+}
+module pn_hemi(size = 300){
+    translate([00,-size/2,-size/2])
+        cube([size,size,size]);
+}
+
+
 module reenforced_case(dims, inner=10, outer=20, center=true){
     dim = dims;
     w_top = dim[0];
@@ -116,8 +127,74 @@ module reenforced_case(dims, inner=10, outer=20, center=true){
     
     }
 }
-//reenforced_case([100,200,300]);
 
+module prism(l, w, h){
+   polyhedron(
+           points=[[0,0,0], [l,0,0], [l,w,0], [0,w,0], [0,w,h], [l,w,h]],
+           faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
+           );
+   /*
+   // preview unfolded (do not include in your function
+   z = 0.08;
+   separation = 2;
+   border = .2;
+   translate([0,w+separation,0])
+       cube([l,w,z]);
+   translate([0,w+separation+w+border,0])
+       cube([l,h,z]);
+   translate([0,w+separation+w+border+h+border,0])
+       cube([l,sqrt(w*w+h*h),z]);
+   translate([l+border,w+separation+w+border+h+border,0])
+       polyhedron(
+               points=[[0,0,0],[h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[h,0,z],[0,sqrt(w*w+h*h),z]],
+               faces=[[0,1,2], [3,5,4], [0,3,4,1], [1,4,5,2], [2,5,3,0]]
+               );
+   translate([0-border,w+separation+w+border+h+border,0])
+       polyhedron(
+               points=[[0,0,0],[0-h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[0-h,0,z],[0,sqrt(w*w+h*h),z]],
+               faces=[[1,0,2],[5,3,4],[0,1,4,3],[1,2,5,4],[2,0,3,5]]
+               );
+               */
+   }
+       
+e = 0.001;
+module snapCellSingle(cellwidth = 5, height = 10){
+    xtol = 0;
+    halfgrip = 1;
+    translate([-cellwidth/2-xtol,0,0])
+    cube([cellwidth/2+xtol,cellwidth/2,height]);
+    translate([-xtol,-halfgrip,0])
+    rotate([0,-90,0])
+    prism(height+e*2,halfgrip,cellwidth/2);
+}
+
+module q(){
+    cellwidth= 10;
+    height = 10;
+    snapCellSingle(cellwidth, height);
+    difference(){
+        //rotate([0,0,180]){
+        pos_hemi([cellwidth, cellwidth, height]);
+        sf = 1.1;
+        translate([-e,-e,-e])
+        rotate([0,0,180])
+        scale([sf,sf,sf])
+            snapCellSingle(cellwidth,height);
+        }
+        
+}
+q();
+
+
+module snapPlane(){
+    sh = 20;
+    cellwidth= 5;
+    for(i = [0: cellwidth:30]){
+        translate([i,0,0])
+        snapCell1D(cellwidth,sh);
+    }
+}
+//snapPlane();
 
 module tapered_rounded_cube(dim,r) {
     dim = dim - [2*r, 2*r, 2*r, 2*r, 2*r];
