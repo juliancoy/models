@@ -1,4 +1,4 @@
-$fn = 30;
+$fn = 40;
 module tapered_cube(dim, center=true){
     w_top = dim[0];
     d_top = dim[1];
@@ -62,8 +62,130 @@ module pn_hemi(size = 300){
         cube([size,size,size]);
 }
 
+module nn_hemi(size = 300){
+    translate([-size/2,-size/2,-size])
+        cube([size,size,size]);
+}
+module ClassicSnap(h = 10, r = 10){
+    rounded_cube([r/3,r/3,.75*h], 0.2*h);
+    translate([0,0,0.8*h])
+    rounded_cube([r/2,r/2,h/3], 0.2*h);
+    cylinder(h/2,r1 = r/2,r2 = r/2 - 3);
+}
+module ClassicSnapExt(h = 10, r = 10){
+    ClassicSnap(h,r);
+    nn_hemi(1000);
+}
+module ClassicSnapWithSlot(h = 10, r = 10){
+    difference(){
+        ClassicSnap(h=h,r=r);
+        translate([0,0,h ])
+        cube([r*2, r/5, h*2], center=true);
+    }
+}
+module ClassicSnapSlotExt(h = 10, r = 10){
+    ClassicSnapWithSlot(h,r);
+    nn_hemi(1000);
+}
+module SmoothClassicSnapWithSlot(){
+    minkowski() {
+        classicSnapWithSlot();
+        sphere(1);
+    }
+}
 
-module reenforced_case(dims, inner=10, outer=20, center=true){
+module ClassicSnapBar(h = 50, r=10){
+    
+    translate([0,0,h/2])
+    rounded_cube([r/3,r/3,h-17], 2);
+    translate([0,0,h-5])
+    ClassicSnap(h=10,r=r);
+    translate([0,0,6.5])
+    rotate([180,0,0])
+    ClassicSnap(h=10,r=r);
+}
+
+
+module ClassicSnapBarSlot(h = 50, r = 10){
+    translate([0,0,h/2])
+    rounded_cube([r/3,r/3,h-17], 2);
+    translate([0,0,h-5])
+    ClassicSnapWithSlot(h=10,r=r);
+    translate([0,0,6.5])
+    rotate([180,0,0])
+    ClassicSnapWithSlot(h=10,r=r);
+}
+
+module snapBetween(p0, p1){
+}
+//ClassicSnapBar(150);
+
+module rod(a, b, r = 10) {
+    //translate(a) sphere(r=r);
+    //translate(b) sphere(r=r);
+
+    short = 5;
+    dir = b-a;
+    h   = norm(dir);
+    if(dir[0] == 0 && dir[1] == 0) {
+        // no transformation necessary
+        if(a[2] < 100){
+        translate(a)
+        translate([0,0,h/2+short])
+        rounded_cube([10,10,h-short*2]);
+        }
+    }
+    else {
+        w  = dir / h;
+        u0 = cross(w, [0,0,1]);
+        u  = u0 / norm(u0);
+        v0 = cross(w, u);
+        v  = v0 / norm(v0);
+        
+        multmatrix(m=[[u[0], v[0], w[0], a[0]],
+                      [u[1], v[1], w[1], a[1]],
+                      [u[2], v[2], w[2], a[2]],
+                      [0,    0,    0,    1]])
+        
+        //cylinder(r=r, h=h); 
+        translate([0,0,h/2+short]){
+        rounded_cube([10,10,h-short*2]);
+        }
+    }
+}
+
+module rods(CubeFaces, CubePoints){
+    
+    faceCount = 6; // 6 faces on a cube
+    union(){
+        for(i = [0:faceCount-1]){
+            face = CubeFaces[i];
+            vertPerFace = 4;
+            for(vi = [0:vertPerFace-1]){
+            rod(CubePoints[face[vi]], CubePoints[face[(vi + 1) % vertPerFace]]);
+            }
+        }
+    }
+}
+
+module corners(CubeFaces, CubePoints, inner=10, outer=18){
+    
+    faceCount = 6; // 6 faces on a cube
+    union(){
+        for(i = [0:faceCount-1]){
+            face = CubeFaces[i];
+            vertPerFace = 4;
+            for(vi = [0:vertPerFace-1]){
+                v = CubePoints[face[vi]];
+                sf = 0.95;
+                translate([v[0]*sf, v[1]*sf, v[2]*sf])
+                rounded_cube([outer,outer,outer],r=6);
+            }
+        }
+    }
+}
+
+module reenforced_case(dims, center=true){
     dim = dims;
     w_top = dim[0];
     d_top = dim[1];
@@ -103,30 +225,40 @@ module reenforced_case(dims, inner=10, outer=20, center=true){
       [6,7,3,2],  // back
       [7,4,0,3]]; // left
     
-    faceCount = 6; // 6 faces on a cube
-    for(i = [0:faceCount-1]){
-        echo("i");
-        echo(i);
-        face = CubeFaces[i];
-        echo("face");
-        echo(face);
-        vertPerFace = 4;
-        for(vi = [0:vertPerFace-1]){
-            v = CubePoints[face[vi]];
-            translate(v)
-            rounded_cube([outer,outer,outer]);
-            hull(){
-                v = CubePoints[face[vi]];
-                translate(v)
-                rounded_cube([inner,inner,inner]);
-                v2 = CubePoints[face[(vi + 1) % vertPerFace]];
-                translate(v2)
-                rounded_cube([inner,inner,inner]);
-            }
-        }
+     corners(CubeFaces, CubePoints);
+     rods(CubeFaces, CubePoints);
+}
+
+module batt(dims){
+    /*
+translate([0,dims[1]/2,dims[2]/2])
+rotate([0,90,0])
+ClassicSnapExt();*/
+
     
+    intersection(){
+    difference(){
+        reenforced_case(dims);
+        tapered_cube(dims);
+    }
+    union(){
+        translate([0,dims[1]/2,dims[2]/2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,dims[1]/2,-dims[2]/2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,-dims[1]/2,dims[2]/2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,-dims[1]/2,-dims[2]/2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
     }
 }
+} 
+    
+batt([228, 136, 208, 132, 211]);
 
 module prism(l, w, h){
    polyhedron(
@@ -261,8 +393,8 @@ module jack100_3way(){
     jack100();
 }
 
-scale([3, 3, 3])
-ffBar10();
+//scale([3, 3, 3])
+//ffBar10();
 //jack100_3way();
 
 module snapPlane(){
