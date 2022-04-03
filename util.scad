@@ -184,14 +184,24 @@ module corners(CubeFaces, CubePoints, inner=10, outer=18){
         }
     }
 }
+module jacks(Vertices, CubePoints, outer=18){
+    
+    for(v = Vertices){
+        vi = CubePoints[v[0]];
+        echo(vi);
+        sf = 1;
+        translate([vi[0]*sf, vi[1]*sf, vi[2]*sf])
+        rounded_cube([outer,outer,outer],r=6,center=true);
+    }
+}
 
 module reenforced_case(dims, center=true){
     dim = dims;
     w_top = dim[0];
     d_top = dim[1];
-    w_bot = dim[0];
-    d_bot = dim[1];
-    h     = dim[2];
+    w_bot = dim[2];
+    d_bot = dim[3];
+    h     = dim[4];
     dw = w_bot - w_top;
     dd = d_bot - d_top;
     
@@ -212,8 +222,8 @@ module reenforced_case(dims, center=true){
       [ -w_bot/2,  d_bot/2,     -h/2 ],  //3
       [ -w_top/2, -d_top/2,      h/2 ],  //4
       [  w_top/2, -d_top/2,      h/2 ],  //5
-      [  w_top/2,  d_bot/2,      h/2 ],  //6
-      [ -w_top/2,  d_bot/2,      h/2 ]]; //7
+      [  w_top/2,  d_top/2,      h/2 ],  //6
+      [ -w_top/2,  d_top/2,      h/2 ]]; //7
       
     CubePoints = center ? CubePointsCenter : CubePointsNonCenter;
    
@@ -225,40 +235,100 @@ module reenforced_case(dims, center=true){
       [6,7,3,2],  // back
       [7,4,0,3]]; // left
     
-     corners(CubeFaces, CubePoints);
-     rods(CubeFaces, CubePoints);
+    
+    /*
+      7----/6
+     /    / |
+    4----5  |
+    |    |  |
+    | 3  |  2
+    |    | /
+    0----1/
+    */
+    Vertices = [
+     //V
+      [0,1,3,4], 
+      [1,0,5,2],
+      [2,1,3,6], 
+      [3,0,2,7], 
+      [4,0,5,7], 
+      [5,1,4,6], 
+      [6,2,5,7], 
+      [7,3,4,6]
+      ];
+     
+     
+     //jacks(Vertices, CubePoints);
+     //corners(CubeFaces, CubePoints);
+     rods(Vertices, CubePoints);
 }
 
+module batt2(dims){
+    /*
+translate([0,dims[1]/2,dims[2]/2])
+rotate([0,90,0])
+ClassicSnapExt();*/
+
+    intersection(){
+    difference(){
+        reenforced_case(dims);
+        tapered_cube(dims);
+        
+        // top holes for handles
+        bringin = 4;
+        translate([-dims[0]/2+bringin,dims[1]/2-bringin,dims[2]/2+10])
+        rotate([0,180,0])
+        ClassicSnapExt();
+        translate([-dims[0]/2+bringin,-dims[1]/2+bringin,dims[2]/2+10])
+        rotate([0,180,0])
+        ClassicSnapExt();
+        
+        // feminine side
+        // z-axis interconnects
+        bringin1 =  2;
+        b1 = bringin1;
+        translate([-dims[0]/2+b1,-dims[1]/2+b1,0])
+        ClassicSnapExt();
+        translate([-dims[0]/2+b1,dims[1]/2-b1,0])
+        ClassicSnapExt();
+        
+    }
+    
+    // x-axis interconnects
+    bringin2 = 5;
+    b2 = bringin2;
+    union(){
+        translate([0,dims[1]/2 -b2,dims[2]/2 -b2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,dims[1]/2 -b2,-dims[2]/2 +b2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,-dims[1]/2 +b2,dims[2]/2 -b2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+        translate([0,-dims[1]/2 +b2,-dims[2]/2 +b2])
+        rotate([0,90,0])
+        ClassicSnapSlotExt();
+    }
+}
+}
 module batt(dims){
     /*
 translate([0,dims[1]/2,dims[2]/2])
 rotate([0,90,0])
 ClassicSnapExt();*/
 
-    
     intersection(){
     difference(){
         reenforced_case(dims);
         tapered_cube(dims);
-    }
-    union(){
-        translate([0,dims[1]/2,dims[2]/2])
-        rotate([0,90,0])
-        ClassicSnapSlotExt();
-        translate([0,dims[1]/2,-dims[2]/2])
-        rotate([0,90,0])
-        ClassicSnapSlotExt();
-        translate([0,-dims[1]/2,dims[2]/2])
-        rotate([0,90,0])
-        ClassicSnapSlotExt();
-        translate([0,-dims[1]/2,-dims[2]/2])
-        rotate([0,90,0])
-        ClassicSnapSlotExt();
+        
     }
 }
-} 
+}
     
-batt([228, 136, 208, 132, 211]);
+batt([231, 140, 224, 135, 213]);
 
 module prism(l, w, h){
    polyhedron(
