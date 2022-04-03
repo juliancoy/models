@@ -1,4 +1,4 @@
-
+$fn = 30;
 module tapered_cube(dim, center=true){
     w_top = dim[0];
     d_top = dim[1];
@@ -158,38 +158,112 @@ module prism(l, w, h){
    }
        
 e = 0.01;
-module snapCellSingle(cellwidth = 5, height = 10){
-    xtol = 0;
-    halfgrip = 1;
-    translate([-cellwidth/2-xtol,0,0])
-    cube([cellwidth/2+xtol,cellwidth/2,height]);
-    translate([-xtol,-halfgrip+e,-e])
+module snapCellSingle(cellwidth = 5, cellLength = 10, height = 10){
+    halffactor = 16;
+    halfgrip = cellLength/halffactor;
+    translate([-cellwidth/2,0,0])
+    cube([cellwidth/2,cellLength/2,height]);
+    translate([0,-halfgrip+e,-e])
     rotate([0,-90,0])
     prism(height-e,halfgrip,cellwidth/2);
 }
 
-module snapCellInverse(cellwidth = 5, height = 10){
+module snapCellInverse(cellwidth = 5, cellLength = 10, height = 10){
     sf = 1.1;
     translate([-e,-e,-e])
     rotate([0,0,180])
     scale([sf,sf,sf])
-        snapCellSingle(cellwidth,height);
+        snapCellSingle(cellwidth,cellLength,height);
     
 }
 
-module q(){
-    cellwidth= 10;
-    height = 10;
-    snapCellSingle(cellwidth, height);
+module radialSnap(cellwidth= 10, cellLength = 20, height = 10, smooth=false){
+    snapCellSingle(cellwidth, cellLength, height);
     difference(){
         //rotate([0,0,180]){
-        pos_hemi([cellwidth, cellwidth, height]);
-        snapCellInverse(cellwidth, height);
+        pos_hemi([cellwidth, cellLength, height]);
+        snapCellInverse(cellwidth, cellLength, height);
     }
 
 }
-q();
 
+module RadialSnapArrayFemale(radius = 2.3,
+    count = 6,
+    cellwidth= 8,
+    cellLength = 5,
+    height = 2.2,
+    smooth=false){
+     for(i = [0: 360/count: 360]){
+         rotate([i,0,0])
+         translate([0, radius, -height/2])
+            radialSnap(cellwidth,cellLength, height);  
+     }
+}
+module RadialSnapArrayMale(radius = 2.3,
+    count = 6,
+    cellwidth= 8,
+    cellLength = 5,
+    height = 2.2,
+    smooth=false){
+     for(i = [0: 360/count: 360]){
+         rotate([i,0,0])
+         translate([0, -radius, -height/2])
+            radialSnap(cellwidth,cellLength, height);  
+     }
+}
+
+module SmoothRadialSnapArray(radius = 30,
+        count = 8,
+        cellwidth= 40,
+        cellLength = 30,
+        height = 15){
+    minkowski() {
+        
+        RadialSnapArray(radius = radius, count = count, cellwidth= cellwidth,  cellLength = cellLength, height = height);
+        sphere(2);
+    }
+}
+
+module ffBar100(){
+    translate([100/2,0,0])
+    rotate([0,90,0])
+    cylinder(h = 90, r = 5, center=true);
+    RadialSnapArrayFemale();
+    translate([100,0,0])
+    rotate([0,0,180])
+    RadialSnapArrayFemale();
+    
+}
+module ffBar10(h = 10){
+    translate([h/2,0,0])
+    rotate([0,90,0])
+    cylinder(h = h*.4, r = 5, center=true);
+    RadialSnapArrayFemale();
+    translate([h,0,0])
+    rotate([0,0,180])
+    RadialSnapArrayFemale();
+    
+}
+//ffBar100();
+
+module jack100(){
+    rotate([0,90,0])
+    cylinder(h = 8, r = 5, center=true);
+    translate([-10,0,0])
+    RadialSnapArrayMale();
+}
+
+module jack100_3way(){
+    jack100();
+    rotate([0,90,0])
+    jack100();
+    rotate([0,0,90])
+    jack100();
+}
+
+scale([3, 3, 3])
+ffBar10();
+//jack100_3way();
 
 module snapPlane(){
     sh = 20;
