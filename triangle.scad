@@ -1,13 +1,13 @@
 e = 0.001;
-shell_width = 3;
+shell_width = 2;
 bottom_shell_width = 1;
-triangle_a = 98; // radius
+triangle_a = 97; // radius
 mirror_height = 1.5;
 rev_mirror_height = 1.5;
-led_height = 11;
+led_height = 12;
 total_height = led_height + bottom_shell_width + mirror_height/2 + rev_mirror_height;
 bore = 2;
-
+tri_gap = 6;
 triangle_r = triangle_a / sqrt(3);// perimiter
 triangle_P = 3*triangle_a;// perimiter
 triangle_s = 3*triangle_a / 2;// semiperimeter 
@@ -27,11 +27,11 @@ module hollow_box(dims, shell_w, shell_h){
     
 }
 
-module triangle_shell(r, h, bottom_shell){
+module triangle_shell(r, h, bottom_shell, side_shell){
     difference(){
         cylinder(r=r, h=h, $fn=3);
         translate([0,0,bottom_shell])
-        cylinder(r=r-shell_width*2, h=h, $fn=3);
+        cylinder(r=r-side_shell*2, h=h, $fn=3);
     }
 }
 
@@ -45,18 +45,6 @@ module screw_holes(sbore, h, f=30){
     
 }
 
-// LED body
-module led_body(){
-    difference(){
-        triangle_shell(triangle_r, total_height, bottom_shell_width);
-        screw_holes(bore, total_height*2);
-        // lip
-        translate([0,0,total_height - mirror_height/2 + e])
-        cylinder(r=triangle_r-3, h=mirror_height/2, $fn=3);
-    }
-}
-
-led_body();
 snap_width = 4;
 // Mirror snaps
 module mirror_snap(snap_overhang = 0.2){
@@ -76,50 +64,77 @@ module mirror_snap(snap_overhang = 0.2){
     }
 }
 
-translate([0,0,mirror_height + bottom_shell_width])
-for(i = [0,120,240]){
-    rotate([0,0,i])
-    minkowski() {
-        mirror_snap();
-        sphere(.3);
+twoway_adj = 2;
+// LED body
+module led_body(){
+    difference(){
+        union(){
+            triangle_shell(triangle_r, total_height, bottom_shell_width, side_shell = shell_width);
+            // mirror snaps
+            translate([0,0,mirror_height + bottom_shell_width])
+            for(i = [0,120,240]){
+                rotate([0,0,i])
+                minkowski() {
+                    mirror_snap();
+                    sphere(.3);
+                }
+            }
+            cyl_d = 7;
+            cyl_h = 6;
+            // necklace mount
+            translate([0,0,led_height/2])
+            for(i = [0,240]){
+                rotate([120,270,i+30])
+                translate([0,-29,0])
+                difference(){
+                    cylinder(d=cyl_d, h=cyl_h, center=true, $fn=30);
+                    cylinder(d=cyl_d-3, h=cyl_h+1, center=true, $fn=30);
+                }
+            }
+        }
+        screw_holes(bore, total_height*2);
+        // lip
+        translate([0,0,total_height - mirror_height/2 + e])
+        cylinder(r=triangle_r-twoway_adj, h=mirror_height/2, $fn=3);
     }
 }
 
+led_body();
 // lid
 lidheight = 1.6;
 module lid(){
     difference(){
-        triangle_shell(r=triangle_r, h=mirror_height/2+lidheight, bottom_shell = lidheight);
+        triangle_shell(r=triangle_r, h=mirror_height/2+lidheight, bottom_shell = 2, side_shell = twoway_adj/2);
         screw_holes(bore, total_height);
         screw_holes(bore*2, 0.4);
         translate([0,0,-e]){
-            cylinder(r=triangle_r-9, h=total_height, $fn=3);  
+            cylinder(r=triangle_r-6, h=total_height, $fn=3);  
         }
     }
 }
 
 rotate([0,0,180])
-translate([-triangle_r/2 ,triangle_a/2 + 3,0])
+translate([-triangle_r/2 ,triangle_a/2 + tri_gap,0])
 lid();
 
 sw = 1.2;
 component_height = 6;
-wiregap =1.2;
+wiregap =2;
 battery_dims = [42, 30, component_height-wiregap];
-battery_offset = [-28.2, -10, 0];
+battery_offset = [-28, -10, 0];
 module battery_box(){
     hollow_box(battery_dims, shell_w = sw, shell_h = bottomshell);
 }
 
 
-charger_dims = [30, 19, component_height-wiregap];
-charger_offset =[-28.2, -30, 0];
+charger_dims = [30, 18, component_height-wiregap];
+charger_offset =[-28, -29, 0];
 module charger_box(){
     hollow_box(charger_dims, shell_w = sw, shell_h = bottomshell);
 }
 
 mcu_dims = [22, 19, component_height-wiregap];
-mcu_offset =[44, -7 , 0];
+mcu_offset =[43.8, -7 , 0];
 module mcu_box(){
         hollow_box(mcu_dims, shell_w = 0.8, shell_h = bottomshell);
 }
@@ -134,7 +149,7 @@ bottomshell = 2;
 module components_lid(){
 difference(){
     union(){
-        triangle_shell(r=triangle_r, h=bottomshell+component_height,  bottom_shell = bottomshell);
+        triangle_shell(r=triangle_r, h=bottomshell+component_height,  bottom_shell = bottomshell, side_shell = shell_width);
         translate(battery_offset)
         battery_box();
         translate(charger_offset)
@@ -153,7 +168,7 @@ difference(){
         mcu_usb_hole();
     }
     screw_holes(bore, 100);
-    screw_holes(bore*2, 1.2, 6);
+    screw_holes(bore*4, 2, 6);
     // switch hole
     rotate([0,0,120]){
     translate([-triangle_r/2+shell_width,triangle_r-60,component_height/2 + bottomshell+e]){
@@ -170,5 +185,5 @@ difference(){
 }
 
 rotate([0,0,180])
-translate([-triangle_r/2 ,-triangle_a/2 - 3,0])
+translate([-triangle_r/2 ,-triangle_a/2 - tri_gap,0])
 components_lid();
