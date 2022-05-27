@@ -1,7 +1,7 @@
 e = 0.001;
 shell_width = 2;
 bottom_shell_width = 1;
-triangle_a = 97; // radius
+triangle_a = 97; // outer side length
 mirror_height = 1.5;
 rev_mirror_height = 1.5;
 led_height = 12;
@@ -79,8 +79,8 @@ module led_body(){
                     sphere(.3);
                 }
             }
-            cyl_d = 7;
-            cyl_h = 6;
+            cyl_d = 6;
+            cyl_h = 5;
             // necklace mount
             translate([0,0,led_height/2])
             for(i = [0,240]){
