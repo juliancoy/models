@@ -1,4 +1,5 @@
-$fn=25;
+$fn=70;
+include <torus.scad>
 
 body_length = 13;
 body_width = 10;
@@ -11,12 +12,6 @@ taperlen=3;
 module body(){
     rotate([0,90,0])
     cylinder(h=body_length, r=body_radius);
-}
-    
-
-module body2(){
-    translate([0,-body_width/2,-body_radius/2])
-    cube([body_length, body_width, body_radius], center=false);
 }
 
 
@@ -32,15 +27,22 @@ module sphere_path(num_spheres=30, r=10, sphere_radius=5) {
 module linkNegative(){
     
     // recepticle ring      
-    translate([-2.5,0,0])
+    translate([-body_radius+0.8,0,0])
     scale([0.2,0.2,0.2])
-    sphere_path(num_spheres=20, r = 17, sphere_radius = 13);
+    //sphere_path(num_spheres=25, r = 20, sphere_radius = 14);
+    torus(or = 20, ir = 14);
 }
 
-module linkingPart(){
+module linkingPart2(){
     rotate([0,-90,0])
     cylinder(taperlen,r1=body_radius,r2=2);
 }
+
+module linkingPart(){
+    translate([0, 0,0, ])
+    sphere(r=body_radius);
+}
+
 
 
 module totalPos(){
@@ -63,7 +65,3 @@ module total(){
 
 
 total();
-
-        
-        
-
