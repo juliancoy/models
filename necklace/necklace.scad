@@ -1,7 +1,7 @@
 
 i = 0;
 
-necklace_radius=82;
+necklace_radius=84;
 body_radius = 10;
 recepticle_length = 2;
 letter_depth=5;
@@ -10,7 +10,7 @@ letter_depth=5;
 
 module imprint(){
     //letters = "k";
-    letters = "BREEZE BREEZE BREEZE BREEZE ";
+    letters = "BREEZE BREEZE BREEZE BREEZE";
     count = len(letters);
     for( i = [0:count-1]){
         l = letters[i];
