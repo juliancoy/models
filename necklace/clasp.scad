@@ -53,5 +53,5 @@ module total(){
     }
 }
 
-
+translate([-body_length/2,0,0])
 total();
