@@ -163,33 +163,25 @@ module bezier_curve_3d_sphere(p0, p1, p2, p3, depthAdjust =0, steps=20) {
 }
 
 module antilatch(){
-    
     difference(){
-        translate([0,-(harmonica_y+y_overhang+latchthickness/2-3)/2,0])
-        scale([1,0.5,1])
-        bezier_curve_3d_sphere(p0, p1, p2, p3, depthAdjust=2);
-    translate([0,0,harmonica_z/2])
-        harmonica_body();
+        union(){
+            translate([0,-(harmonica_y+y_overhang+latchthickness/2-1.8)/2,0])
+                scale([1,0.71,1])
+                    bezier_curve_3d_sphere(p0, p1, p2, p3, depthAdjust=0);
+            
+            /*translate([0,-(harmonica_y+y_overhang+latchthickness/2-3)/2,-4])
+                   scale([10,6,10])
+                    sphere(d=1);*/
+        }    
+        translate([0,0,harmonica_z/2])
+            harmonica_body();
         
     }
 }
-
-module antilatch_inner(){
-    
-    difference(){
-        translate([0,-(harmonica_y+y_overhang+latchthickness/2-5)/2,0])
-        scale([1,0.5,1])
-        bezier_curve_3d_sphere(p0, p1, p2, p3, depthAdjust=1);
-    translate([0,0,harmonica_z/2])
-        harmonica_body();
-        
-    }
-}
-
 
 module latch(){
     difference(){
-        translate([0,(harmonica_y+y_overhang+latchthickness/2-0.5)/2,0])
+            translate([0,(harmonica_y+y_overhang+latchthickness/2+1.8)/2,0])
         bezier_curve_3d_sphere(p0, p1, p2, p3);
     translate([0,0,harmonica_z/2])
         harmonica_body();
@@ -203,15 +195,9 @@ difference(){
     latch();
     mirror([0,1,0])
     antilatch();
-    mirror([0,1,0])
-    antilatch_inner();
-    mirror([0,0,1])
-    translate([0,0,harmonica_z/2])
-    cover();
     
 }
 }
 
 fractalLatch();
 antilatch();
-antilatch_inner();
