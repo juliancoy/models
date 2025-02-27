@@ -18,18 +18,20 @@ module body(){
     sphere(r=r_bottom);
 }
 
-translate([0,0,r_bottom*sphere_z_scale])
-difference(){
-    body();
-    translate([0,0,size_z])
-    // friction overlap
-    cylinder(r = r_top-shell_width, h=friction_overlap*2, center=true);
-    
-    // main hollow body
-    cylinder(h = size_z-friction_overlap+0.005 , r1=r_bottom-shell_width, r2=r_top-shell_width*2);
+module wholebody(){
+    translate([0,0,r_bottom*sphere_z_scale])
+    difference(){
+        body();
+        translate([0,0,size_z])
+        // friction overlap
+        cylinder(r = r_top-shell_width, h=friction_overlap*2, center=true);
+        
+        // main hollow body
+        cylinder(h = size_z-friction_overlap+0.005 , r1=r_bottom-shell_width, r2=r_top-shell_width*2);
 
-    scale([1,1,sphere_z_scale])
-    sphere(r=r_bottom-shell_width);
+        scale([1,1,sphere_z_scale])
+        sphere(r=r_bottom-shell_width);
+    }
 }
 
 knurl_depth = 1;
@@ -60,9 +62,14 @@ module cap(){
     knurling(cap_height, num_knurls=30, knurl_height=cap_height);
 }
 
-translate([0,15,0])
-difference(){
-    cap();
-    translate([0,0,shell_width*2])
-    cylinder(r = r_top-shell_width*2, h=friction_overlap+0.001+cap_height);
+module wholeCap(){
+    translate([0,15,0])
+    difference(){
+        cap();
+        translate([0,0,shell_width*2])
+        cylinder(r = r_top-shell_width*2, h=friction_overlap+0.001+cap_height);
+    }
 }
+
+
+wholeCap();
